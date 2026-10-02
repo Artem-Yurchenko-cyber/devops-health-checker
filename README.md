@@ -1,24 +1,32 @@
-# DevOps Health-Checker & Telegram Notifier
+# DevOps Observability & Interactive Alerting Suite
 
-Автоматизована система моніторингу сервісів та сповіщення про аварії (Incident Notification) у Telegram. Проєкт розроблено для регулярної перевірки доступності веб-сервісів (на прикладі Grafana) із використанням **Bash**, **Python** та **Docker**.
+Повноцінний комплекс моніторингу інфраструктури та автоматизованого сповіщення про аварії (Incident Management) з інтерактивним Telegram-ботом.
+
+Проєкт об'єднує метрики інфраструктури (Prometheus + Node Exporter), візуалізацію (Grafana) та кастомний контейнеризований агент перевірки доступності з інтелектуальним алертингом (Bash + Python).
 
 ---
 
 ## Технологічний стек
 
-* **Bash** — перевірка HTTP-статусу сервісів за допомогою `curl`.
-* **Python 3.10** — взаємодія з Telegram Bot API через HTTP-запити.
-* **Docker** — контейнеризація агента моніторингу.
-* **Git & GitHub** — версіонування коду та безпечне управління секретами.
+* **Infrastructure Monitoring:** Prometheus, Node Exporter.
+* **Visualization:** Grafana (Dashboards & Metrics).
+* **Automation & Scripting:** Bash (curl), Python 3.10 (Telegram Bot API, psutil).
+* **Orchestration & Containerization:** Docker, Docker Compose.
+* **Security:** Dotenv (.env) & Gitignore.
 
 ---
 
-## Основний функціонал
+## Ключові можливості
 
-1. **Periodic Health Check:** Періодичне опитування цільового URL (`/api/health`).
-2. **Smart Alerting:** Відправка сповіщень у Telegram тільки при виявленні помилки (`HTTP Status != 200`).
-3. **Containerized Execution:** Робота у фоновому режимі всередині ізольованого Docker-контейнера.
-4. **Security Best Practices:** Відсутність hardcoded секретів — токени та ключі зчитуються зі змінних оточення (`.env`).
+1. **Full-Stack Observability:** Збір метрик хост-машини та візуалізація стану систем у Grafana.
+2. **Multi-Target Service Discovery:** Перевірка декількох сервісів (Grafana, Prometheus, Node Exporter) через внутрішню мережу Docker.
+3. **Smart Alerting System:**
+   * Шле **ALERT** у Telegram тільки при переході стану з UP на DOWN.
+   * Шле **RECOVERY** один раз при відновленні працездатності.
+   * Повністю усунено проблему спаму повідомленнями.
+4. **Interactive Telegram Bot:**
+   * Реагує на команду `/status` у приватних повідомленнях.
+   * Повертає актуальні дані про завантаження CPU, RAM та диска.
 
 ---
 
@@ -26,33 +34,32 @@
 
 ```text
 .
-├── Dockerfile          # Інструкція збірки Docker-образу
-├── check_status.sh     # Bash-скрипт перевірки статусу сервісу
-├── send_telegram.py    # Python-скрипт відправки алертів у Telegram
-├── .env.example        # Шаблон змінних оточення (без секретів)
-└── .gitignore          # Ігнорування .env та логів від Git
+├── docker-compose.yml  # Оркестрація 4-х сервісів
+├── Dockerfile          # Збірка агента моніторингу
+├── prometheus.yml      # Конфігурація таргетів моніторингу
+├── check_status.sh     # Скрипт перевірки доступності сервісів
+├── send_telegram.py    # Telegram бот та обробник команд
+├── .env.example        # Шаблон секретів
+└── README.md           # Документація
+Швидкий запуск
+Клонувати репозиторій:
 
----
-## Клонування репозитрію
+Bash
 git clone [https://github.com/Artem-Yurchenko-cyber/devops-health-checker.git](https://github.com/Artem-Yurchenko-cyber/devops-health-checker.git)
 cd devops-health-checker
+Налаштувати секрети:
 
-## Налаштування змінних оточення
-Створіть файл .env на основі шаблону та вкажіть свої дані Telegram:
+Bash
 cp .env.example .env
-Заповність .env
+Вкажіть у .env свій BOT_TOKEN та CHAT_ID.
 
-## Фрагмент коду
-BOT_TOKEN=your_telegram_bot_token
-CHAT_ID=your_telegram_chat_id
+Запустити весь стек:
 
-## Збірка та запуск у Docker
-Зберіть Docker-образ:
-docker build -t health-checker:v1
+Bash
+docker compose up -d --build
+Доступ до сервісів
+Grafana: http://localhost:3000 (admin/admin)
 
-Запустіть контейнер з підтримкою звернення до хост-машини (host.docker.internal)
-docker run -d --name health-checker --env-file .env --add-host=host.docker.internal:host-gateway health-checker:v1
+Prometheus: http://localhost:9090
 
-## Результати
-При падінні сервісу бот генерує миттєвий алерт у Telegram:
-ALER: Service Grafana is DOWN! HTTP Code: 000
+Node Exporter: http://localhost:9100/metrics
